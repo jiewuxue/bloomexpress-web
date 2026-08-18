@@ -24,6 +24,7 @@ export default (command, mode) => {
 		],
 		server: {
 			host: true,
+			allowedHosts: true,
 			// open: true,
 			port: env.SHOPRO_DEV_PORT,
 			hmr: {
