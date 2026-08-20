@@ -62,7 +62,20 @@
           :topRadius="10"
           :bottomRadius="10"
           @click="sheep.$router.go('/pages/goods/index', { id: item.id })"
-        />
+        >
+          <template v-slot:cart>
+            <button
+              class="ss-reset-button list-cart-btn list-cart-btn-lg"
+              @tap.stop="onQuickAddCart(item)"
+            >
+              <image
+                class="list-cart-icon"
+                src="/static/img/shop/tools/cart.png"
+                mode="aspectFit"
+              />
+            </button>
+          </template>
+        </s-goods-column>
       </view>
     </view>
     <!-- 情况二：双列布局 -->
@@ -82,7 +95,13 @@
             @getHeight="mountMasonry($event, 'left')"
           >
             <template v-slot:cart>
-              <button class="ss-reset-button cart-btn" />
+              <button class="ss-reset-button list-cart-btn" @tap.stop="onQuickAddCart(item)">
+                <image
+                  class="list-cart-icon"
+                  src="/static/img/shop/tools/cart.png"
+                  mode="aspectFit"
+                />
+              </button>
             </template>
           </s-goods-column>
         </view>
@@ -99,7 +118,13 @@
             @getHeight="mountMasonry($event, 'right')"
           >
             <template v-slot:cart>
-              <button class="ss-reset-button cart-btn" />
+              <button class="ss-reset-button list-cart-btn" @tap.stop="onQuickAddCart(item)">
+                <image
+                  class="list-cart-icon"
+                  src="/static/img/shop/tools/cart.png"
+                  mode="aspectFit"
+                />
+              </button>
             </template>
           </s-goods-column>
         </view>
@@ -114,6 +139,16 @@
       @tap="loadMore"
     />
     <s-empty v-if="state.pagination.total === 0" icon="/static/soldout-empty.png" text="暂无商品" />
+
+    <!-- 多规格商品：选择规格弹窗 -->
+    <s-select-sku
+      v-if="state.showSelectSku && state.skuGoods"
+      :key="state.skuGoods.id"
+      :goodsInfo="state.skuGoods"
+      :show="true"
+      @addCart="onSelectSkuAddCart"
+      @close="state.showSelectSku = false"
+    />
   </s-layout>
 </template>
 
@@ -126,6 +161,7 @@
   import SpuApi from '@/sheep/api/product/spu';
   import OrderApi from '@/sheep/api/trade/order';
   import { appendSettlementProduct } from '@/sheep/hooks/useGoods';
+  import { showAuthModal } from '@/sheep/hooks/useModal';
 
   const sys_navBar = sheep.$platform.navbar;
   const emits = defineEmits(['close', 'change']);
@@ -178,6 +214,8 @@
     loadStatus: '',
     leftGoodsList: [], // 双列布局 - 左侧商品
     rightGoodsList: [], // 双列布局 - 右侧商品
+    skuGoods: null, // 多规格商品 - 选择规格弹窗使用的 SPU 详情
+    showSelectSku: false, // 多规格商品 - 是否展示规格弹窗
   });
 
   // 加载瀑布流
@@ -301,6 +339,47 @@
     getList(state.currentSort, state.currentOrder);
   }
 
+  // 列表卡片：快速加入购物车
+  async function onQuickAddCart(item) {
+    if (item.stock != null && item.stock <= 0) {
+      sheep.$helper.toast('该商品无库存');
+      return;
+    }
+    // 未登录：弹出登录框
+    if (!sheep.$store('user').isLogin) {
+      showAuthModal();
+      return;
+    }
+    // 加载 SPU 详情（含 SKU）
+    const { code, data } = await SpuApi.getSpuDetail(item.id);
+    if (code !== 0 || !data) {
+      return;
+    }
+    const skus = data.skus || [];
+    if (skus.length === 1) {
+      // 单规格：直接加入
+      if (skus[0].stock <= 0) {
+        sheep.$helper.toast('该商品无库存');
+        return;
+      }
+      sheep.$store('cart').add({ id: skus[0].id, goods_num: 1 });
+    } else {
+      // 多规格：弹出选择规格弹窗
+      state.skuGoods = data;
+      state.showSelectSku = true;
+    }
+  }
+
+  // 规格弹窗：加入购物车
+  function onSelectSkuAddCart(e) {
+    if (!e.id) {
+      sheep.$helper.toast('请选择商品规格');
+      return;
+    }
+    sheep.$store('cart').add(e);
+    state.showSelectSku = false;
+  }
+
   onLoad((options) => {
     state.categoryId = options.categoryId;
     state.keyword = options.keyword;
@@ -314,6 +393,27 @@
 </script>
 
 <style lang="scss" scoped>
+  // 列表卡片 - 快速加购物车按钮
+  .list-cart-btn {
+    width: 54rpx;
+    height: 54rpx;
+    background: linear-gradient(90deg, #fe8900, #ff5e00);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 50rpx;
+    right: 20rpx;
+    z-index: 2;
+  }
+
+  .list-cart-btn-lg {
+    bottom: 20rpx;
+  }
+
+  .list-cart-icon {
+    width: 30rpx;
+    height: 30rpx;
+  }
+
   .goods-list-box {
     width: 50%;
     box-sizing: border-box;

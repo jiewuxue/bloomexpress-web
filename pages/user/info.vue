@@ -125,52 +125,63 @@
             class="list-border"
           />
         </uni-list>
+        <!-- 当前社交平台的绑定关系，只处理 wechat 微信场景 -->
+        <view v-if="sheep.$platform.name !== 'H5'">
+          <view class="title-box ss-p-l-30">第三方账号绑定</view>
+          <view class="account-list ss-flex ss-row-between">
+            <view
+              v-if="'WechatOfficialAccount' === sheep.$platform.name"
+              class="ss-flex ss-col-center"
+            >
+              <image
+                class="list-img"
+                :src="sheep.$url.static('/static/img/shop/platform/WechatOfficialAccount.png')"
+              />
+              <text class="list-name">微信公众号</text>
+            </view>
+            <view
+              v-if="'WechatMiniProgram' === sheep.$platform.name"
+              class="ss-flex ss-col-center"
+            >
+              <image
+                class="list-img"
+                :src="sheep.$url.static('/static/img/shop/platform/WechatMiniProgram.png')"
+              />
+              <text class="list-name">微信小程序</text>
+            </view>
+            <view v-if="'App' === sheep.$platform.name" class="ss-flex ss-col-center">
+              <image
+                class="list-img"
+                :src="sheep.$url.static('/static/img/shop/platform/wechat.png')"
+              />
+              <text class="list-name">微信开放平台</text>
+            </view>
+            <view class="ss-flex ss-col-center">
+              <view class="info ss-flex ss-col-center" v-if="state.thirdInfo">
+                <image class="avatar ss-m-r-20" :src="sheep.$url.cdn(state.thirdInfo.avatar)" />
+                <text class="name">{{ state.thirdInfo.nickname }}</text>
+              </view>
+              <view class="bind-box ss-m-l-20">
+                <button
+                  v-if="state.thirdInfo.openid"
+                  class="ss-reset-button relieve-btn"
+                  @tap="unBindThirdOauth"
+                >
+                  解绑
+                </button>
+                <button v-else class="ss-reset-button bind-btn" @tap="bindThirdOauth">绑定</button>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="bg-white ss-m-t-14">
+        <view class="logout-wrap">
+          <button class="ss-reset-button logout-action" @tap="onLogout">退出</button>
+        </view>
       </view>
     </uni-forms>
-
-    <!-- 当前社交平台的绑定关系，只处理 wechat 微信场景 -->
-    <view v-if="sheep.$platform.name !== 'H5'">
-      <view class="title-box ss-p-l-30">第三方账号绑定</view>
-      <view class="account-list ss-flex ss-row-between">
-        <view v-if="'WechatOfficialAccount' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/WechatOfficialAccount.png')"
-          />
-          <text class="list-name">微信公众号</text>
-        </view>
-        <view v-if="'WechatMiniProgram' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/WechatMiniProgram.png')"
-          />
-          <text class="list-name">微信小程序</text>
-        </view>
-        <view v-if="'App' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/wechat.png')"
-          />
-          <text class="list-name">微信开放平台</text>
-        </view>
-        <view class="ss-flex ss-col-center">
-          <view class="info ss-flex ss-col-center" v-if="state.thirdInfo">
-            <image class="avatar ss-m-r-20" :src="sheep.$url.cdn(state.thirdInfo.avatar)" />
-            <text class="name">{{ state.thirdInfo.nickname }}</text>
-          </view>
-          <view class="bind-box ss-m-l-20">
-            <button
-              v-if="state.thirdInfo.openid"
-              class="ss-reset-button relieve-btn"
-              @tap="unBindThirdOauth"
-            >
-              解绑
-            </button>
-            <button v-else class="ss-reset-button bind-btn" @tap="bindThirdOauth">绑定</button>
-          </view>
-        </view>
-      </view>
-    </view>
 
     <su-fixed bottom placeholder bg="none">
       <view class="footer-box ss-p-20">
@@ -186,6 +197,7 @@
   import { clone } from 'lodash-es';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import UserApi from '@/sheep/api/member/user';
+  import AuthUtil from '@/sheep/api/member/auth';
   import {
     chooseAndUploadFile,
     uploadFilesFromPath,
@@ -273,6 +285,25 @@
     });
   }
 
+  // 退出账号
+  function onLogout() {
+    uni.showModal({
+      title: '提示',
+      content: '确认退出账号？',
+      success: async function (res) {
+        if (!res.confirm) {
+          return;
+        }
+        const { code } = await AuthUtil.logout();
+        if (code !== 0) {
+          return;
+        }
+        sheep.$store('user').logout();
+        sheep.$router.go('/pages/index/user');
+      },
+    });
+  }
+
   // 保存信息
   async function onSubmit() {
     const { code } = await UserApi.updateUser({
@@ -344,10 +375,11 @@
   }
 
   .title-box {
-    font-size: 28rpx;
-    font-weight: 500;
-    color: #666666;
-    line-height: 100rpx;
+    font-size: 24rpx;
+    font-weight: 400;
+    color: #999999;
+    line-height: 70rpx;
+    padding-bottom: 10rpx;
   }
 
   .logout-btn {
@@ -398,8 +430,8 @@
   // 绑定项
   .account-list {
     background-color: $white;
-    height: 100rpx;
-    padding: 0 20rpx;
+    height: 110rpx;
+    padding: 0 30rpx;
 
     .list-img {
       width: 40rpx;
@@ -458,6 +490,26 @@
     font-weight: 400;
     color: #333333;
     border-bottom: 2rpx solid #eeeeee;
+  }
+
+  .logout-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 30rpx 0;
+  }
+
+  .logout-action {
+    width: 690rpx;
+    height: 80rpx;
+    border-radius: 40rpx;
+    background: var(--ui-BG-Main-opacity-1);
+    color: var(--ui-BG-Main);
+    font-size: 28rpx;
+    font-weight: 500;
+    line-height: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   image {
