@@ -251,6 +251,8 @@
   }
 
   onShow(() => {
+    // 进入购物车时重置编辑模式，避免停留在删除态
+    cart.editMode = false;
     getCartList();
   });
 </script>
