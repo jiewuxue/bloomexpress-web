@@ -66,6 +66,7 @@
           <template v-slot:cart>
             <button
               class="ss-reset-button list-cart-btn list-cart-btn-lg"
+              :class="cartCountMap[item.id] > 0 ? 'list-cart-btn-added' : ''"
               @tap.stop="onQuickAddCart(item)"
             >
               <image
@@ -95,7 +96,11 @@
             @getHeight="mountMasonry($event, 'left')"
           >
             <template v-slot:cart>
-              <button class="ss-reset-button list-cart-btn" @tap.stop="onQuickAddCart(item)">
+              <button
+                class="ss-reset-button list-cart-btn"
+                :class="cartCountMap[item.id] > 0 ? 'list-cart-btn-added' : ''"
+                @tap.stop="onQuickAddCart(item)"
+              >
                 <image
                   class="list-cart-icon"
                   src="/static/img/shop/tools/cart.png"
@@ -118,7 +123,11 @@
             @getHeight="mountMasonry($event, 'right')"
           >
             <template v-slot:cart>
-              <button class="ss-reset-button list-cart-btn" @tap.stop="onQuickAddCart(item)">
+              <button
+                class="ss-reset-button list-cart-btn"
+                :class="cartCountMap[item.id] > 0 ? 'list-cart-btn-added' : ''"
+                @tap.stop="onQuickAddCart(item)"
+              >
                 <image
                   class="list-cart-icon"
                   src="/static/img/shop/tools/cart.png"
@@ -153,8 +162,8 @@
 </template>
 
 <script setup>
-  import { reactive, ref } from 'vue';
-  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
+  import { computed, reactive, ref } from 'vue';
+  import { onLoad, onReachBottom, onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { concat } from 'lodash-es';
   import { resetPagination } from '@/sheep/helper/utils';
@@ -165,6 +174,19 @@
 
   const sys_navBar = sheep.$platform.navbar;
   const emits = defineEmits(['close', 'change']);
+  const cart = sheep.$store('cart');
+
+  // 购物车中每个 SPU 的总数量（用于区分已加入购物车的商品）
+  const cartCountMap = computed(() => {
+    const map = {};
+    cart.list.forEach((item) => {
+      const spuId = item.spu?.id;
+      if (spuId != null) {
+        map[spuId] = (map[spuId] || 0) + (item.count || 0);
+      }
+    });
+    return map;
+  });
 
   const state = reactive({
     pagination: {
@@ -386,6 +408,13 @@
     getList(state.currentSort, state.currentOrder);
   });
 
+  // 页面显示：登录状态下刷新购物车，保证已加购商品角标准确
+  onShow(() => {
+    if (sheep.$store('user').isLogin) {
+      cart.getList();
+    }
+  });
+
   // 上拉加载更多
   onReachBottom(() => {
     loadMore();
@@ -412,6 +441,11 @@
   .list-cart-icon {
     width: 30rpx;
     height: 30rpx;
+  }
+
+  // 已加购：按钮变为灰色
+  .list-cart-btn-added {
+    background: linear-gradient(90deg, #cfcfcf, #a6a6a6);
   }
 
   .goods-list-box {
