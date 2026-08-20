@@ -1,7 +1,7 @@
 {
-  "name": "芋道商城",
+  "name": "昆广鲜花",
   "appid": "__UNI__460BC4C",
-  "description": "基于 uni-app + Vue3 技术驱动的在线商城系统，内含诸多功能与丰富的活动，期待您的使用和反馈。",
+  "description": "昆广鲜花 B2B 采购平台，基于 uni-app + Vue3 技术驱动，支持商品、订单、支付、会员等多种采购经营需求。",
   "versionName": "2026.04",
   "versionCode": "183",
   "transformPx": false,
@@ -225,7 +225,7 @@
     "async": {
       "timeout": 20000
     },
-    "title": "芋道商城",
+    "title": "昆广鲜花",
     "optimization": {
       "treeShaking": {
         "enable": true
