@@ -587,13 +587,16 @@
     height: 100rpx;
     position: absolute;
     top: 0;
-    z-index: -1;
+    left: 0;
+    z-index: 0;
   }
 
   .discountCont {
     width: 680rpx;
     height: 90rpx;
     margin: 10rpx auto 0 auto;
+    position: relative;
+    z-index: 1;
     // background-color: gold;
   }
 
@@ -620,14 +623,14 @@
     // background-color: gold;
     font-size: 30rpx;
     text-align: end;
-    color: white;
+    color: #9b2d3a;
     font-weight: bolder;
     font-style: oblique 20deg;
     letter-spacing: 0.1rem;
   }
 
   .disContT1P {
-    color: white;
+    color: #9b2d3a;
     font-weight: bold;
     font-size: 28rpx;
   }
@@ -652,7 +655,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 20rpx;
-    color: white;
+    color: #8a4c58;
     align-items: center;
   }
 
