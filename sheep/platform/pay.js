@@ -373,6 +373,10 @@ export function getPayMethods(channels) {
   if (channels.includes('mock')) {
     mockMethod.disabled = false;
   }
+  // 微信小程序：支付渠道关闭时，不展示微信支付（避免灰色置灰展示）
+  if (platform === 'WechatMiniProgram' && wechatMethod.disabled) {
+    payMethods.splice(payMethods.indexOf(wechatMethod), 1);
+  }
   return payMethods;
 }
 
