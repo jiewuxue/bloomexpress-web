@@ -26,13 +26,20 @@
           <slot name="left">
             <view class="uni-navbar__content_view" v-if="leftIcon.length > 0">
               <view class="icon-box ss-flex">
-                <view class="icon-button icon-button-left ss-flex ss-row-center" @tap="onClickLeft">
+                <view
+                  class="icon-button icon-button-left ss-flex ss-row-center"
+                  hover-class="icon-btn-press-left"
+                  hover-stay-time="80"
+                  @tap="onClickLeft"
+                >
                   <text class="sicon-back" v-if="hasHistory" />
                   <text class="sicon-home" v-else />
                 </view>
                 <view class="line"></view>
                 <view
                   class="icon-button icon-button-right ss-flex ss-row-center"
+                  hover-class="icon-btn-press-right"
+                  hover-stay-time="80"
                   @tap="showMenuTools"
                 >
                   <text class="sicon-more" />
@@ -307,14 +314,29 @@
     .icon-button {
       width: 67rpx;
       height: 56rpx;
+
+      /* #ifdef H5 */
       &-left:hover {
         background: rgba(0, 0, 0, 0.16);
         border-radius: 30rpx 0px 0px 30rpx;
       }
+
       &-right:hover {
         background: rgba(0, 0, 0, 0.16);
         border-radius: 0px 30rpx 30rpx 0px;
       }
+      /* #endif */
+    }
+
+    // 小程序按压态（原生 hover-class，避免 :hover 状态残留）
+    .icon-btn-press-left {
+      background: rgba(0, 0, 0, 0.16);
+      border-radius: 30rpx 0px 0px 30rpx;
+    }
+
+    .icon-btn-press-right {
+      background: rgba(0, 0, 0, 0.16);
+      border-radius: 0px 30rpx 30rpx 0px;
     }
   }
 

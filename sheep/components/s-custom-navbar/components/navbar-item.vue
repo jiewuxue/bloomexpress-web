@@ -6,7 +6,7 @@
       v-if="data.type === 'text'"
       class="nav-title inline"
       :style="[{ color: data.textColor, width: width }]"
-      @tap="sheep.$router.go(data.url)"
+      @tap="data.url && sheep.$router.go(data.url)"
     >
       {{ data.text }}
     </view>
@@ -14,9 +14,9 @@
     <view
       v-if="data.type === 'image'"
       :style="[{ width: width }]"
-      class="menu-icon-wrap ss-flex ss-row-center ss-col-center"
-      @tap="sheep.$router.go(data.url)"
-    >
+        class="menu-icon-wrap ss-flex ss-row-center ss-col-center"
+        @tap="data.url && sheep.$router.go(data.url)"
+      >
       <image class="nav-image" :src="sheep.$url.cdn(data.imgUrl)" mode="aspectFit"></image>
     </view>
     <!-- 类型三： 搜索框 -->
