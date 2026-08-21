@@ -20,7 +20,10 @@
     if (code !== 0) {
       return;
     }
-    state.content = data.content;
+    // 数据库中的内容可能是 JSON 转义后的 HTML（如 <\/p>、\"），需还原后才能被 mp-html 解析
+    state.content = (data.content || '')
+      .replace(/\\"/g, '"')
+      .replace(/\\\//g, '/');
     // 标题不一致时，修改标题
     if (state.title !== data.title) {
       state.title = data.title;
